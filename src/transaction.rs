@@ -403,6 +403,7 @@ pub struct DeclareTransactionOutput {
     pub actual_fee: Fee,
     pub messages_sent: Vec<MessageToL1>,
     pub events: Vec<Event>,
+    #[serde(flatten)]
     pub execution_status: TransactionExecutionStatus,
     pub execution_resources: ExecutionResources,
 }
@@ -419,6 +420,7 @@ pub struct DeployAccountTransactionOutput {
     pub messages_sent: Vec<MessageToL1>,
     pub events: Vec<Event>,
     pub contract_address: ContractAddress,
+    #[serde(flatten)]
     pub execution_status: TransactionExecutionStatus,
     pub execution_resources: ExecutionResources,
 }
@@ -435,6 +437,7 @@ pub struct DeployTransactionOutput {
     pub messages_sent: Vec<MessageToL1>,
     pub events: Vec<Event>,
     pub contract_address: ContractAddress,
+    #[serde(flatten)]
     pub execution_status: TransactionExecutionStatus,
     pub execution_resources: ExecutionResources,
 }
@@ -450,6 +453,7 @@ pub struct InvokeTransactionOutput {
     pub actual_fee: Fee,
     pub messages_sent: Vec<MessageToL1>,
     pub events: Vec<Event>,
+    #[serde(flatten)]
     pub execution_status: TransactionExecutionStatus,
     pub execution_resources: ExecutionResources,
 }
@@ -465,6 +469,7 @@ pub struct L1HandlerTransactionOutput {
     pub actual_fee: Fee,
     pub messages_sent: Vec<MessageToL1>,
     pub events: Vec<Event>,
+    #[serde(flatten)]
     pub execution_status: TransactionExecutionStatus,
     pub execution_resources: ExecutionResources,
 }
@@ -491,6 +496,7 @@ pub struct TransactionReceipt {
     derive(parity_scale_codec::Encode, parity_scale_codec::Decode)
 )]
 #[cfg_attr(feature = "scale-info", derive(scale_info::TypeInfo))]
+#[serde(tag = "execution_status")]
 pub enum TransactionExecutionStatus {
     #[serde(rename = "SUCCEEDED")]
     #[default]
@@ -498,7 +504,13 @@ pub enum TransactionExecutionStatus {
     // status and every transaction is considered succeeded
     Succeeded,
     #[serde(rename = "REVERTED")]
-    Reverted,
+    Reverted(RevertedTransactionExecutionStatus),
+}
+
+/// A reverted transaction execution status.
+#[derive(Debug, Clone, Eq, PartialEq, Hash, Deserialize, Serialize, PartialOrd, Ord)]
+pub struct RevertedTransactionExecutionStatus {
+    pub revert_reason: String,
 }
 
 /// A fee.
@@ -912,6 +924,8 @@ pub struct ExecutionResources {
     pub steps: u64,
     pub builtin_instance_counter: IndexMap<Builtin, u64>,
     pub memory_holes: u64,
+    pub da_l1_gas_consumed: u64,
+    pub da_l1_data_gas_consumed: u64,
 }
 
 #[cfg(feature = "scale-info")]
@@ -929,7 +943,9 @@ impl scale_info::TypeInfo for ExecutionResources {
                             .name("builtin_instance_counter")
                             .type_name("Vec<(Builtin, u64)>")
                     })
-                    .field(|f| f.ty::<u64>().name("memory_holes").type_name("u64")),
+                    .field(|f| f.ty::<u64>().name("memory_holes").type_name("u64"))
+                    .field(|f| f.ty::<u64>().name("da_l1_gas_consumed").type_name("u64"))
+                    .field(|f| f.ty::<u64>().name("da_l1_data_gas_consumed").type_name("u64")),
             )
     }
 }
@@ -940,6 +956,8 @@ impl parity_scale_codec::Encode for ExecutionResources {
         self.steps.size_hint()
             + self.builtin_instance_counter.len() * core::mem::size_of::<Builtin>()
             + self.memory_holes.size_hint()
+            + self.da_l1_gas_consumed.size_hint()
+            + self.da_l1_data_gas_consumed.size_hint()
     }
 
     fn encode_to<T: parity_scale_codec::Output + ?Sized>(&self, dest: &mut T) {
@@ -947,6 +965,8 @@ impl parity_scale_codec::Encode for ExecutionResources {
         parity_scale_codec::Compact(self.builtin_instance_counter.len() as u32).encode_to(dest);
         self.builtin_instance_counter.iter().for_each(|v| v.encode_to(dest));
         self.memory_holes.encode_to(dest);
+        self.da_l1_gas_consumed.encode_to(dest);
+        self.da_l1_data_gas_consumed.encode_to(dest);
     }
 }
 
@@ -955,12 +975,14 @@ impl parity_scale_codec::Decode for ExecutionResources {
     fn decode<I: parity_scale_codec::Input>(
         input: &mut I,
     ) -> Result<Self, parity_scale_codec::Error> {
-        let data = <(u64, Vec<(Builtin, u64)>, u64)>::decode(input)?;
+        let data = <(u64, Vec<(Builtin, u64)>, u64, u64, u64)>::decode(input)?;
 
         Ok(ExecutionResources {
             steps: data.0,
             builtin_instance_counter: data.1.into_iter().collect(),
             memory_holes: data.2,
+            da_l1_gas_consumed: data.3,
+            da_l1_data_gas_consumed: data.4,
         })
     }
 }

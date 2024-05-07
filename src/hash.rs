@@ -45,7 +45,16 @@ pub fn pedersen_hash_array(felts: &[StarkFelt]) -> StarkHash {
     derive(parity_scale_codec::Encode, parity_scale_codec::Decode)
 )]
 #[cfg_attr(feature = "scale-info", derive(scale_info::TypeInfo))]
+#[derive(
+    Copy, Clone, Eq, PartialEq, Default, Hash, Deserialize, Serialize, PartialOrd, Ord, Debug,
+)]
 pub struct PoseidonHash(pub StarkFelt);
+
+impl Display for PoseidonHash {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Display::fmt(&self.0, f)
+    }
+}
 
 /// Computes Poseidon hash.
 pub fn poseidon_hash_array(felts: &[StarkFelt]) -> PoseidonHash {
