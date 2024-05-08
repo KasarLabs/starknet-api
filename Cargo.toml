@@ -2,7 +2,7 @@
 name = "starknet_api"
 version = "0.10.0"
 edition = "2021"
-repository = "https://github.com/jbcaron/starknet-api"
+repository = "https://github.com/starkware-libs/starknet-api"
 license = "Apache-2.0"
 license-file = "LICENSE"
 description = "Starknet Rust types related to computation and execution."
