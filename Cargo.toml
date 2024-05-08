@@ -1,6 +1,6 @@
 [package]
 name = "starknet_api"
-version = "0.8.0"
+version = "0.10.0"
 edition = "2021"
 repository = "https://github.com/starkware-libs/starknet-api"
 license = "Apache-2.0"
@@ -14,7 +14,7 @@ parity-scale-codec = ["dep:parity-scale-codec"]
 scale-info = ["dep:scale-info"]
 
 [dependencies]
-cairo-lang-starknet-classes = { git = "https://github.com/bidzyyys/cairo.git", branch = "feature/scale-codec" }
+cairo-lang-starknet-classes = { git = "https://github.com/kasarlabs/cairo.git", branch = "feature/scale-codec" }
 derive_more = "0.99.17"
 hex = "0.4.3"
 indexmap = { version = "2.1.0", features = ["serde"] }
