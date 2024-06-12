@@ -72,7 +72,7 @@ pub fn poseidon_hash_array(felts: &[StarkFelt]) -> PoseidonHash {
 )]
 #[cfg_attr(feature = "scale-info", derive(scale_info::TypeInfo))]
 #[serde(try_from = "PrefixedBytesAsHex<32_usize>", into = "PrefixedBytesAsHex<32_usize>")]
-pub struct StarkFelt(pub [u8; 32]);
+pub struct StarkFelt([u8; 32]);
 
 impl StarkFelt {
     /// Returns a new [`StarkFelt`].

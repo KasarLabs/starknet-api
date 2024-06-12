@@ -298,7 +298,7 @@ pub struct StateDiffCommitment(pub PoseidonHash);
     derive(parity_scale_codec::Encode, parity_scale_codec::Decode)
 )]
 #[cfg_attr(feature = "scale-info", derive(scale_info::TypeInfo))]
-pub struct PatriciaKey(pub StarkHash);
+pub struct PatriciaKey(StarkHash);
 
 // 2**251
 pub const PATRICIA_KEY_UPPER_BOUND: &str =
