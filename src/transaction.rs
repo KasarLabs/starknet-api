@@ -711,7 +711,7 @@ pub struct L2ToL1Payload(pub Vec<StarkFelt>);
 #[cfg_attr(feature = "scale-info", derive(scale_info::TypeInfo))]
 pub struct Event {
     pub from_address: ContractAddress,
-    #[serde(flatten)]
+    // #[serde(flatten)]
     pub content: EventContent,
 }
 
